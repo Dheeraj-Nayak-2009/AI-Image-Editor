@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Editor🖼️</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            background-color: #241b35;
+            font-family: 'Poppins', sans-serif;
+            font-size: smaller;
+        }
+        .big {
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            background: #4d425f;
+            width: calc(100% - 70px);
+            border-radius: 30px;
+        }
+        .flex {
+            display: flex;
+            justify-content: space-evenly;
+            margin: 20px 0;
+            width: 100%;
+
+        }
+        .img-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #241b35;
+            width: calc(50% - 15px);
+            border-radius: 10px;
+        }
+        .img-container h2 {
+            margin: 0;
+            padding: 10px;
+            color: #fff;
+        }
+        .img-container img {
+            border: 1px solid #cb80ff;
+            border-radius: 10px;
+            width: calc(100% - 8px);
+            margin: 4px;
+            text-indent: -9999px;
+
+        }
+        .form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        input, button {
+            width: calc(100% - 20px);
+            margin: 10px 10px 0px;
+            outline: none;
+            border: none;
+            padding: 5px 0;
+            background-color: #342a45;
+            color: white;
+            font-family: "Poppins", sans-serif;
+            border-radius: 15px;
+        }
+        input[type="text"]::placeholder{
+            padding-left: 10px;
+        }
+        input[type="text"] {
+            padding-left: 10px;
+            width: calc(100% - 30px);
+        }
+        input[type="file"] {
+            padding: 0;
+            width: calc(100% - 20px);
+            background-color: #342a45;
+            color: white;
+        }
+        input[type="file"]::file-selector-button {
+            background-color: #342a45;
+            color: white;
+            border-radius: 15px;
+            padding: 5px 10px;
+            border: 2px ridge #cb80ff;
+            border-bottom: 2px solid #6c35de;
+            border-right: 2px solid #6c35de;
+            transition: all 0.7s ease;
+        }
+        input[type="file"]::file-selector-button:hover {
+            border: 2px ridge #cb80ff;
+            border-top: 2px solid #6c35de;
+            border-left: 2px solid #6c35de;
+        }
+        button{
+            background: linear-gradient(to right, #6c35de, #a364ff);
+            animation: bg 5s linear infinite;
+            background-size: 200% 200%;
+        }
+        @keyframes bg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @media only screen and (max-width: 768px) {
+            .big {
+                width: calc(100% - 20px);
+            }
+            .img-container {
+                width: calc(100% - 20px);
+            }
+            .flex {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px
+            }
+            
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Image Editor</h1>
+  <div class="big">
+    <form method="POST" enctype="multipart/form-data" class="form">
+      <input type="file" name="file" accept="image/*"/>
+      <input type="text" name="prompt" placeholder="Enter your prompt" required />
+      <button type="submit">Submit</button>
+    </form>
+
+    {% if error %}
+      <p style="color: red; margin-top: 10px;">{{ error }}</p>
+    {% endif %}
+
+    <div class="flex">
+      <div class="img-container">
+        <h2>Original Image</h2>
+        {% if original_image %}
+          <img src="{{ url_for('static', filename=original_image) }}" alt="Original Image" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='"/>
+        {% else %}
+          <p>No image uploaded.</p>
+        {% endif %}
+      </div>
+      <div class="img-container">
+        <h2>Edited Image</h2>
+        {% if edited_image %}
+          <img src="{{ url_for('static', filename=edited_image) }}" alt="Edited Image" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='"/>
+        {% else %}
+          <p>Submit a prompt to edit image.</p>
+        {% endif %}
+      </div>
+<script>
+document.addEventListener('paste', async (event) => {
+    const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+    for (const item of items) {
+        if (item.type.indexOf("image") === 0) {
+            const blob = item.getAsFile();
+            const fileInput = document.querySelector('input[type="file"]');
+
+            // Create a new DataTransfer to assign the pasted file to the input
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(blob);
+            fileInput.files = dataTransfer.files;
+
+            // Optional: Add preview
+            const previewContainer = document.querySelector(".img-container img");
+            previewContainer.src = URL.createObjectURL(blob);
+
+            alert("Image pasted! Now enter a prompt and click Submit.");
+            break;
+        }
+    }
+});
+</script>
+</body>
+</html>
