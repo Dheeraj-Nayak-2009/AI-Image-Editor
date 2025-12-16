@@ -12,7 +12,7 @@ app.secret_key = 'your_secret_key'
 UPLOAD_FOLDER = 'static'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-API_KEY = "BJ{bTzCwZUMfn5Ql8G{TETfKq:Vq.Wru9.EYxot"
+API_KEY = "REVERSE_ENGINEER_THE_'f(word)'_FUNCTION_TO_GET_THE_ENCODED_API"
 
 def f(word):
   new_word = ""
@@ -98,3 +98,4 @@ def reset():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
